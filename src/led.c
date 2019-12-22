@@ -5,19 +5,22 @@
                                 | (1 << PIN_LED_B_0) | (1 << PIN_LED_R_1) \
                                 | (1 << PIN_LED_G_1) | (1 << PIN_LED_B_1) \
                                 | (1 << PIN_LED_R_2) | (1 << PIN_LED_G_2) \
-                                | (1 << PIN_LED_B_2))
+                                | (1 << PIN_LED_B_2) | (1 << PIN_LED_R_3) \
+                                | (1 << PIN_LED_G_3) | (1 << PIN_LED_B_3))
 
 #define LED_MODER_MASK          ((3 << PIN_LED_R_0 * 2) | (3 << PIN_LED_G_0 * 2) \
                                 | (3 << PIN_LED_B_0 * 2) | (3 << PIN_LED_R_1 * 2) \
                                 | (3 << PIN_LED_G_1 * 2) | (3 << PIN_LED_B_1 * 2) \
                                 | (3 << PIN_LED_R_2 * 2) | (3 << PIN_LED_G_2 * 2) \
-                                | (3 << PIN_LED_B_2 * 2))
+                                | (3 << PIN_LED_B_2 * 2) | (3 << PIN_LED_R_3 * 2) \
+                                | (3 << PIN_LED_G_3 * 2) | (3 << PIN_LED_B_3 * 2))
 
 #define LED_MODER               ((1 << PIN_LED_R_0 * 2) | (1 << PIN_LED_G_0 * 2) \
                                 | (1 << PIN_LED_B_0 * 2) | (1 << PIN_LED_R_1 * 2) \
                                 | (1 << PIN_LED_G_1 * 2) | (1 << PIN_LED_B_1 * 2) \
                                 | (1 << PIN_LED_R_2 * 2) | (1 << PIN_LED_G_2 * 2) \
-                                | (1 << PIN_LED_B_2 * 2))
+                                | (1 << PIN_LED_B_2 * 2) | (1 << PIN_LED_R_3 * 2) \
+                                | (1 << PIN_LED_G_3 * 2) | (1 << PIN_LED_B_3 * 2))
 
 uint8_t LED_Data[LED_COUNT] = {0, 63, 200, 255};
 
@@ -27,6 +30,14 @@ uint8_t LED_Data[LED_COUNT] = {0, 63, 200, 255};
 static const uint16_t LED_BitLengths[LED_BITS - 4] =
 {
     16, 32, 64, 128, 256, 512, 1024, 2048
+};
+
+static const int LED_Pins[LED_COUNT] =
+{
+    PIN_LED_R_0, PIN_LED_G_0, PIN_LED_B_0,
+    PIN_LED_R_1, PIN_LED_G_1, PIN_LED_B_1,
+    PIN_LED_R_2, PIN_LED_G_2, PIN_LED_B_2,
+    PIN_LED_R_3, PIN_LED_G_3, PIN_LED_B_3
 };
 
 static uint16_t LED_DMABuffer[LED_BITS + 1];
@@ -42,11 +53,11 @@ static void LED_RefreshDMABuffer(void)
         {
             if(gamma_corrected & (1 << j))
             {
-                LED_DMABuffer[j] &= ~(1 << i);
+                LED_DMABuffer[j] &= ~(1 << LED_Pins[i]);
             }
             else
             {
-                LED_DMABuffer[j] |= 1 << i;
+                LED_DMABuffer[j] |= 1 << LED_Pins[i];
             }
         }
     }

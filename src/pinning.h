@@ -10,3 +10,6 @@
 #define PIN_LED_R_2             6
 #define PIN_LED_G_2             7
 #define PIN_LED_B_2             9
+#define PIN_LED_R_3             10
+#define PIN_LED_G_3             13
+#define PIN_LED_B_3             14

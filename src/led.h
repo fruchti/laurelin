@@ -4,7 +4,7 @@
 #include "pinning.h"
 
 #define LED_BITS                12
-#define LED_COUNT               9
+#define LED_COUNT               12
 
 void LED_Init(void);
 
