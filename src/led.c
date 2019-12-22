@@ -42,11 +42,11 @@ static void LED_RefreshDMABuffer(void)
         {
             if(gamma_corrected & (1 << j))
             {
-                LED_DMABuffer[j] |= 1 << i;
+                LED_DMABuffer[j] &= ~(1 << i);
             }
             else
             {
-                LED_DMABuffer[j] &= ~(1 << i);
+                LED_DMABuffer[j] |= 1 << i;
             }
         }
     }
@@ -118,14 +118,14 @@ static void LED_StartBCM(void)
             "nop;"
             "nop;"
             "nop;"
-            "str %[zero], [%[odr]];"
+            "str %[off], [%[odr]];"
             :
             : [odr] "l" ((uint32_t)&(GPIOA->ODR)),
               [d0] "r" (LED_DMABuffer[0]),
               [d1] "r" (LED_DMABuffer[1]),
               [d2] "r" (LED_DMABuffer[2]),
               [d3] "r" (LED_DMABuffer[3]),
-              [zero] "r" (0)
+              [off] "r" (LED_ODR_MASK)
             :);
 
     // Enable TIM3 for the rest of the bits
@@ -138,7 +138,8 @@ void LED_Init(void)
     RCC->AHBENR |= RCC_AHBENR_DMA1EN;
     RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
-    GPIOA->ODR &= ~LED_ODR_MASK;
+    GPIOA->ODR |= LED_ODR_MASK;
+    GPIOA->OTYPER |= LED_ODR_MASK;
     GPIOA->MODER = (GPIOA->MODER & ~LED_MODER_MASK) | LED_MODER;
 
     TIM3->CR1 = 0x0000;
