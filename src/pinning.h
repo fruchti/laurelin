@@ -13,3 +13,7 @@
 #define PIN_LED_R_3             10
 #define PIN_LED_G_3             13
 #define PIN_LED_B_3             14
+
+// Port F
+#define PIN_ROW_DATA            0   // Shift register data in
+#define PIN_ROW_SCK             1   // Shift register clock
