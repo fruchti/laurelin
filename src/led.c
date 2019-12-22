@@ -1,6 +1,9 @@
 #include "led.h"
 #include "stm32f030x6.h"
 
+LED_Colour_t LED_PixelData[LED_ROWS * LED_COLUMNS / 3] = {{0}};
+volatile bool LED_FrameFlag = false;
+
 #define LED_ODR_MASK            ((1 << PIN_LED_R_0) | (1 << PIN_LED_G_0) \
                                 | (1 << PIN_LED_B_0) | (1 << PIN_LED_R_1) \
                                 | (1 << PIN_LED_G_1) | (1 << PIN_LED_B_1) \
@@ -22,8 +25,6 @@
                                 | (1 << PIN_LED_B_2 * 2) | (1 << PIN_LED_R_3 * 2) \
                                 | (1 << PIN_LED_G_3 * 2) | (1 << PIN_LED_B_3 * 2))
 
-uint8_t LED_Data[LED_ROWS][LED_COLUMNS] = {{0}};
-
 // TIM3 is clocked by APB1 and thus receives only half the system clock. The 4
 // LSBs have bit lengths 2, 4, 8, and 16 cycles and are generated blocking from
 // an inline assembly block and are thus not in this table.
@@ -40,15 +41,35 @@ static const int LED_Pins[LED_COLUMNS] =
     PIN_LED_R_3, PIN_LED_G_3, PIN_LED_B_3
 };
 
-static uint16_t LED_DMABuffer[LED_ROWS * (LED_BITS + 1)];
+// Number of 16-bit values to be transferred to the GPIO's output register via
+// DMA. Each value contains output values for all columns. For each row, a
+// value for each bit is needed, plus a constant last transfer to turn all LEDs
+// off during the processing time.
+#define LED_DMA_BUFFER_LENGTH   (LED_ROWS * (LED_BITS + 1))
 
-static void LED_RefreshDMABuffer(void)
+// Define buffers for double buffering
+static uint16_t LED_DMABuffer1[LED_DMA_BUFFER_LENGTH];
+static uint16_t LED_DMABuffer2[LED_DMA_BUFFER_LENGTH];
+static uint16_t *volatile LED_FrontBuffer = LED_DMABuffer1;
+static uint16_t *volatile LED_BackBuffer = LED_DMABuffer2;
+
+// If true, front and back buffers will be swapped after the current frame
+static volatile bool LED_QueuePageFlip = false;
+
+void LED_Commit(void)
 {
+    // Wait for the current data to be displayed in case LED_Commit was called
+    // more than one time during a single frame. Otherwise, a race condition
+    // might occur.
+    while(LED_QueuePageFlip);
+
     for(int r = 0; r < LED_ROWS; r++)
     {
         for(int i = 0; i < LED_COLUMNS; i++)
         {
-            uint16_t gamma_corrected = (uint16_t)LED_Data[r][i];
+            // Use pixel data as a raw byte buffer to get R, G, B in order
+            uint8_t colour_value = ((uint8_t*)LED_PixelData)[r * LED_COLUMNS + i];
+            uint16_t gamma_corrected = (uint16_t)colour_value;
             gamma_corrected *= gamma_corrected;
             gamma_corrected >>= 16 - LED_BITS;
 
@@ -56,18 +77,20 @@ static void LED_RefreshDMABuffer(void)
             {
                 if(gamma_corrected & (1 << j))
                 {
-                    LED_DMABuffer[r * (LED_BITS + 1) + j] &=
+                    LED_BackBuffer[r * (LED_BITS + 1) + j] &=
                         ~(1 << LED_Pins[i]);
                 }
                 else
                 {
-                    LED_DMABuffer[r * (LED_BITS + 1) + j] |= 1 << LED_Pins[i];
+                    LED_BackBuffer[r * (LED_BITS + 1) + j] |= 1 << LED_Pins[i];
                 }
             }
         }
         // Data to reset outputs after all data bits are sent
-        LED_DMABuffer[r * (LED_BITS + 1) + LED_BITS] = LED_ODR_MASK;
+        LED_BackBuffer[r * (LED_BITS + 1) + LED_BITS] = LED_ODR_MASK;
     }
+
+    LED_QueuePageFlip = true;
 }
 
 static void LED_StartBCM(int row)
@@ -86,7 +109,7 @@ static void LED_StartBCM(int row)
     TIM3->DIER = TIM_DIER_UDE | TIM_DIER_CC1DE;
 
     // DMA channel 3: Output data to port a on TIM3 update
-    DMA1_Channel3->CMAR = (uint32_t)&(LED_DMABuffer[row * (LED_BITS + 1) + 4]);
+    DMA1_Channel3->CMAR = (uint32_t)&(LED_FrontBuffer[row * (LED_BITS + 1) + 4]);
     // One transfer for each bit plus one to set the outputs to zero again.
     // The first 4 are sent out with assembly before the first DMA transfer.
     DMA1_Channel3->CNDTR = LED_BITS + 1 - 4;
@@ -137,10 +160,10 @@ static void LED_StartBCM(int row)
             "str %[off], [%[odr]];"
             :
             : [odr] "l" ((uint32_t)&(GPIOA->ODR)),
-              [d0] "r" (LED_DMABuffer[row * (LED_BITS + 1) + 0]),
-              [d1] "r" (LED_DMABuffer[row * (LED_BITS + 1) + 1]),
-              [d2] "r" (LED_DMABuffer[row * (LED_BITS + 1) + 2]),
-              [d3] "r" (LED_DMABuffer[row * (LED_BITS + 1) + 3]),
+              [d0] "r" (LED_FrontBuffer[row * (LED_BITS + 1) + 0]),
+              [d1] "r" (LED_FrontBuffer[row * (LED_BITS + 1) + 1]),
+              [d2] "r" (LED_FrontBuffer[row * (LED_BITS + 1) + 2]),
+              [d3] "r" (LED_FrontBuffer[row * (LED_BITS + 1) + 3]),
               [off] "r" (LED_ODR_MASK)
             :);
 
@@ -156,12 +179,27 @@ static inline void LED_PulseRowClock(void)
     GPIOF->BRR = (1 << PIN_ROW_SCK);
 }
 
+static inline void LED_PageFlip(void)
+{
+    uint16_t *volatile tmp;
+    tmp = LED_FrontBuffer;
+    LED_FrontBuffer = LED_BackBuffer;
+    LED_BackBuffer = tmp;
+    LED_QueuePageFlip = false;
+}
+
 void LED_Init(void)
 {
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
     RCC->AHBENR |= RCC_AHBENR_GPIOFEN;
     RCC->AHBENR |= RCC_AHBENR_DMA1EN;
     RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+
+    // Fill both DMA buffers
+    LED_Commit();
+    LED_PageFlip();
+    LED_Commit();
+    LED_PageFlip();
 
     GPIOF->ODR &= ~(1 << PIN_ROW_SCK) & ~(1 << PIN_ROW_DATA);
     GPIOF->MODER = (GPIOF->MODER
@@ -198,7 +236,6 @@ void LED_Init(void)
 
     NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
 
-    LED_RefreshDMABuffer();
     LED_StartBCM(0);
 }
 
@@ -215,6 +252,11 @@ void DMA1_Channel2_3_IRQHandler(void)
         current_row = 0;
         LED_PulseRowClock();
         GPIOF->BSRR = 1 << PIN_ROW_DATA;
+        if(LED_QueuePageFlip)
+        {
+            LED_PageFlip();
+        }
+        LED_FrameFlag = true;
     }
     else
     {
