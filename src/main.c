@@ -13,7 +13,6 @@ int main(void)
 
     LED_Init();
 
-    int ct = 0;
     uint8_t *data = (uint8_t*)LED_PixelData;
     while(1)
     {
@@ -22,16 +21,13 @@ int main(void)
         uint8_t brightness = LightSensor_RelativeBrightness * 255;
         if(LED_FrameFlag)
         {
-            LED_FrameFlag = false;
-            data[ct] = brightness;
-            LED_Commit();
-            
-            ct += 3;
-            if(ct >= LED_COLUMNS * LED_ROWS)
+            for(int i = 0; i < LED_COLUMNS * LED_ROWS; i++)
             {
-                ct -= LED_COLUMNS * LED_ROWS;
-                ct += 1;
+                data[i] = brightness;
             }
+            
+            LED_FrameFlag = false;
+            LED_Commit();
         }
     }
 
