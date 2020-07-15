@@ -3,14 +3,14 @@
 int main(void)
 {
     LED_InitShiftRegister();
+    LightSensor_Init();
 
     // Delay a bit to make programming easier
-    for(unsigned int i = 0; i < 10000000; i++)
+    for(unsigned int i = 0; i < 1000; i++)
     {
-        __asm__ volatile("nop");
+        LightSensor_Poll();
     }
 
-    LightSensor_Init();
     LED_Init();
 
     int ct = 0;
