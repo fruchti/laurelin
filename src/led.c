@@ -188,18 +188,9 @@ static inline void LED_PageFlip(void)
     LED_QueuePageFlip = false;
 }
 
-void LED_Init(void)
+void LED_InitShiftRegister(void)
 {
-    RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
     RCC->AHBENR |= RCC_AHBENR_GPIOFEN;
-    RCC->AHBENR |= RCC_AHBENR_DMA1EN;
-    RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
-
-    // Fill both DMA buffers
-    LED_Commit();
-    LED_PageFlip();
-    LED_Commit();
-    LED_PageFlip();
 
     GPIOF->ODR &= ~(1 << PIN_ROW_SCK) & ~(1 << PIN_ROW_DATA);
     GPIOF->MODER = (GPIOF->MODER
@@ -215,6 +206,19 @@ void LED_Init(void)
     }
     // All shift register outputs are now '1'. Because the rows are driven with
     // external transistors, this means all rows are off.
+}
+
+void LED_Init(void)
+{
+    RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+    RCC->AHBENR |= RCC_AHBENR_DMA1EN;
+    RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+
+    // Fill both DMA buffers
+    LED_Commit();
+    LED_PageFlip();
+    LED_Commit();
+    LED_PageFlip();
 
     GPIOA->ODR |= LED_ODR_MASK;
     GPIOA->PUPDR &= ~LED_MODER_MASK;

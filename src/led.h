@@ -23,6 +23,7 @@ extern LED_Colour_t LED_PixelData[LED_ROWS * LED_COLUMNS / 3];
 // externally. Will not be set to false within led.c.
 extern volatile bool LED_FrameFlag;
 
+void LED_InitShiftRegister(void);
 void LED_Init(void);
 
 // Display LED_PixelData, starting with the next frame
