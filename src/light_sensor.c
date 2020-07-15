@@ -67,18 +67,17 @@ void LightSensor_Poll(void)
         unsigned int measurement = LightSensor_Measurement;
         LightSensor_NewMeasurement = false;
         float brightness = 1.0f - measurement / 65535.0f;
-
-        if(measurement != 65535 && brightness < LightSensor_MinimumBrightness)
-        {
-            LightSensor_MinimumBrightness = brightness;
-        }
-        if(brightness > LightSensor_MaximumBrightness)
-        {
-            LightSensor_MaximumBrightness = brightness;
-        }
-
         LightSensor_AbsoluteBrightness = LIGHTSENSOR_LAMBDA * LightSensor_AbsoluteBrightness
             + (1.0f - LIGHTSENSOR_LAMBDA) * brightness;
+
+        if(LightSensor_AbsoluteBrightness < LightSensor_MinimumBrightness)
+        {
+            LightSensor_MinimumBrightness = LightSensor_AbsoluteBrightness;
+        }
+        if(LightSensor_AbsoluteBrightness > LightSensor_MaximumBrightness)
+        {
+            LightSensor_MaximumBrightness = LightSensor_AbsoluteBrightness;
+        }
 
         // Scale and saturate to get relative brightness value
         float range = LightSensor_MaximumBrightness
