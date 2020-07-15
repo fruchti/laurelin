@@ -80,12 +80,6 @@ void LightSensor_Poll(void)
         LightSensor_AbsoluteBrightness = LIGHTSENSOR_LAMBDA * LightSensor_AbsoluteBrightness
             + (1.0f - LIGHTSENSOR_LAMBDA) * brightness;
 
-        // Slowly move maximum and minimum back to 0.0 and 1.0, respectively
-        LightSensor_MaximumBrightness *= LIGHTSENSOR_ALPHA;
-        LightSensor_MinimumBrightness = 1.0f - LightSensor_MinimumBrightness;
-        LightSensor_MinimumBrightness *= LIGHTSENSOR_ALPHA;
-        LightSensor_MinimumBrightness = 1.0f - LightSensor_MinimumBrightness;
-
         // Scale and saturate to get relative brightness value
         float range = LightSensor_MaximumBrightness
             - LightSensor_MinimumBrightness;
