@@ -6,7 +6,7 @@
 #include "pinning.h"
 
 // ADC polling interval in milliseconds
-#define LIGHTSENSOR_INTERVAL    2000
+#define LIGHTSENSOR_INTERVAL    10
 
 // 'Forgetting factor' of the rolling brightness average
 #define LIGHTSENSOR_LAMBDA      0.95f
