@@ -66,7 +66,7 @@ void LightSensor_Poll(void)
     {
         unsigned int measurement = LightSensor_Measurement;
         LightSensor_NewMeasurement = false;
-        float brightness = 1.0f - measurement / 65535.0f;
+        float brightness = 65535.0f / measurement;
         LightSensor_AbsoluteBrightness = LIGHTSENSOR_LAMBDA * LightSensor_AbsoluteBrightness
             + (1.0f - LIGHTSENSOR_LAMBDA) * brightness;
 
