@@ -55,6 +55,9 @@ void LightSensor_Init(void)
     NVIC_EnableIRQ(TIM14_IRQn);
     
     LightSensor_Measure();
+
+    while(!LightSensor_NewMeasurement);
+    LightSensor_Poll();
 }
 
 void LightSensor_Poll(void)
