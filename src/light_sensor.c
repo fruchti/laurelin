@@ -4,13 +4,13 @@ volatile unsigned int LightSensor_Measurement;
 volatile bool LightSensor_NewMeasurement = false;
 
 // Rolling average of the brightness measurement
-float LightSensor_AbsoluteBrightness = 0.5f;
+unsigned int LightSensor_AbsoluteBrightness = LIGHTSENSOR_MAX / 2;
 
 // Maximum and minimum encountered so far
-float LightSensor_MinimumBrightness = 1.0f;
-float LightSensor_MaximumBrightness = 0.0f;
+unsigned int LightSensor_MinimumBrightness = LIGHTSENSOR_MAX;
+unsigned int LightSensor_MaximumBrightness = 0;
 
-float LightSensor_RelativeBrightness;
+int LightSensor_RelativeBrightness;
 
 static void LightSensor_Measure(void)
 {
@@ -66,35 +66,38 @@ void LightSensor_Poll(void)
     {
         unsigned int measurement = LightSensor_Measurement;
         LightSensor_NewMeasurement = false;
-        float brightness = 65535.0f / measurement;
-        LightSensor_AbsoluteBrightness = LIGHTSENSOR_LAMBDA * LightSensor_AbsoluteBrightness
-            + (1.0f - LIGHTSENSOR_LAMBDA) * brightness;
+        unsigned int brightness = ((1 << 31)
+            / (measurement + 1)) >> (31 - 16);
+        // LightSensor_AbsoluteBrightness = LIGHTSENSOR_LAMBDA * LightSensor_AbsoluteBrightness
+        //     + (1.0f - LIGHTSENSOR_LAMBDA) * brightness;
+        LightSensor_AbsoluteBrightness -= LightSensor_AbsoluteBrightness >> LIGHTSENSOR_LAMBDA_BITS;
+        LightSensor_AbsoluteBrightness += brightness >> LIGHTSENSOR_LAMBDA_BITS;
 
-        if(LightSensor_AbsoluteBrightness < LightSensor_MinimumBrightness)
+        if(brightness < LightSensor_MinimumBrightness)
         {
-            LightSensor_MinimumBrightness = LightSensor_AbsoluteBrightness;
+            LightSensor_MinimumBrightness = brightness;
         }
-        if(LightSensor_AbsoluteBrightness > LightSensor_MaximumBrightness)
+        if(brightness > LightSensor_MaximumBrightness)
         {
-            LightSensor_MaximumBrightness = LightSensor_AbsoluteBrightness;
+            LightSensor_MaximumBrightness = brightness;
         }
 
         // Scale and saturate to get relative brightness value
-        float range = LightSensor_MaximumBrightness
+        int range = LightSensor_MaximumBrightness
             - LightSensor_MinimumBrightness;
-        float low = LightSensor_MinimumBrightness
-            + range * LIGHTSENSOR_LOW_BOUND;
-        float high = LightSensor_MinimumBrightness
-            + range * LIGHTSENSOR_HIGH_BOUND;
+        int low = LightSensor_MinimumBrightness
+            + LIGHTSENSOR_LOW_BOUND * range / LIGHTSENSOR_MAX;
+        int high = LightSensor_MinimumBrightness
+            + LIGHTSENSOR_HIGH_BOUND * range / LIGHTSENSOR_MAX;
         LightSensor_RelativeBrightness = (LightSensor_AbsoluteBrightness - low)
-            / (high - low);
-        if(LightSensor_RelativeBrightness < 0.0f)
+            * LIGHTSENSOR_MAX / (high - low);
+        if(LightSensor_RelativeBrightness < 0)
         {
-            LightSensor_RelativeBrightness = 0.0f;
+            LightSensor_RelativeBrightness = 0;
         }
-        if(LightSensor_RelativeBrightness > 1.0f)
+        if(LightSensor_RelativeBrightness > LIGHTSENSOR_MAX)
         {
-            LightSensor_RelativeBrightness = 1.0f;
+            LightSensor_RelativeBrightness = LIGHTSENSOR_MAX;
         }
     }
 }

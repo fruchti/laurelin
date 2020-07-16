@@ -276,12 +276,9 @@ LED_Colour_t Animation_GetColour(unsigned int step, unsigned int brightness)
 
     LED_Colour_t colour = Animation_ColourLUT[index];
 
-    colour.r = ((unsigned int)colour.r * brightness)
-        >> ANIMATION_BRIGHTNESS_BITS;
-    colour.g = ((unsigned int)colour.g * brightness)
-        >> ANIMATION_BRIGHTNESS_BITS;
-    colour.b = ((unsigned int)colour.b * brightness)
-        >> ANIMATION_BRIGHTNESS_BITS;
+    colour.r = ((unsigned int)colour.r * brightness) >> LIGHTSENSOR_BITS;
+    colour.g = ((unsigned int)colour.g * brightness) >> LIGHTSENSOR_BITS;
+    colour.b = ((unsigned int)colour.b * brightness) >> LIGHTSENSOR_BITS;
 
     return colour;
 }
@@ -305,7 +302,6 @@ void Animation_Poll(void)
         return;
     }
     LED_FrameFlag = false;
-    Animation_DrawGradient(60000, 50000,
-        ANIMATION_MAX_BRIGHTNESS * LightSensor_RelativeBrightness);
+    Animation_DrawGradient(60000, 50000, LightSensor_RelativeBrightness);
     LED_Commit();
 }

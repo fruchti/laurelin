@@ -8,15 +8,19 @@
 // ADC polling interval in milliseconds
 #define LIGHTSENSOR_INTERVAL    250
 
+// Resolution of the brightness output
+#define LIGHTSENSOR_BITS        12
+#define LIGHTSENSOR_MAX         (1 << LIGHTSENSOR_BITS)
+
 // 'Forgetting factor' of the rolling brightness average
-#define LIGHTSENSOR_LAMBDA      0.9f
+#define LIGHTSENSOR_LAMBDA_BITS 4
 
 // Bounds for converting absolute to relative brightness: Consider everything
 // near the minimum or maximum 0.0 or 1.0, respectively
-#define LIGHTSENSOR_LOW_BOUND   0.005f
-#define LIGHTSENSOR_HIGH_BOUND  0.9f
+#define LIGHTSENSOR_LOW_BOUND   ((unsigned int)(0.005 * LIGHTSENSOR_MAX))
+#define LIGHTSENSOR_HIGH_BOUND  ((unsigned int)(0.9 * LIGHTSENSOR_MAX))
 
-extern float LightSensor_RelativeBrightness;
+extern int LightSensor_RelativeBrightness;
 
 void LightSensor_Init(void);
 void LightSensor_Poll(void);
