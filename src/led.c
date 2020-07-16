@@ -3,6 +3,7 @@
 
 LED_Colour_t LED_PixelData[LED_COUNT] = {{0}};
 volatile bool LED_FrameFlag = false;
+volatile bool LED_SuspendFlag = false;
 
 #define LED_ODR_MASK            ((1 << PIN_LED_R_0) | (1 << PIN_LED_G_0) \
                                 | (1 << PIN_LED_B_0) | (1 << PIN_LED_R_1) \
@@ -215,6 +216,7 @@ void LED_Init(void)
     RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
     // Fill both DMA buffers
+    LED_QueuePageFlip = false;
     LED_Commit();
     LED_PageFlip();
     LED_Commit();
@@ -244,6 +246,39 @@ void LED_Init(void)
     LED_StartBCM(0);
 }
 
+void LED_Suspend(void)
+{
+    LED_SuspendFlag = true;
+    while(LED_SuspendFlag);
+
+    // Disable timer and DMA channels
+    TIM3->CR1 = 0x0000;
+    TIM3->DIER = 0x0000;
+    TIM3->CNT = 0;
+    DMA1->IFCR = DMA_IFCR_CTCIF3;
+    DMA1_Channel3->CCR = 0x0000;
+    DMA1_Channel4->CCR = 0x0000;
+    NVIC_DisableIRQ(DMA1_Channel2_3_IRQn);
+    NVIC_ClearPendingIRQ(DMA1_Channel2_3_IRQn);
+
+    // Deactivate all rows and columns
+    GPIOA->BSRR = LED_ODR_MASK;
+    GPIOF->BSRR = (1 << PIN_ROW_DATA);
+    for(int i = 0; i < LED_ROWS + 1; i++)
+    {
+        LED_PulseRowClock();
+    }
+
+    // Disable timer and DMA clocks
+    RCC->AHBENR &= ~RCC_AHBENR_DMA1EN;
+    RCC->APB1ENR &= ~RCC_APB1ENR_TIM3EN;
+}
+
+void LED_WakeUp(void)
+{
+    LED_Init();
+}
+
 void DMA1_Channel2_3_IRQHandler(void)
 {
     // Interrupt when all bits have been sent
@@ -266,6 +301,12 @@ void DMA1_Channel2_3_IRQHandler(void)
     else
     {
         LED_PulseRowClock();
+    }
+
+    if(LED_SuspendFlag)
+    {
+        LED_SuspendFlag = false;
+        return;
     }
 
     // Start sending bits out again. The row offset caused by the shift

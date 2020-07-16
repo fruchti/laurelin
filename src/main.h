@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string.h>
+#include <stdbool.h>
 
 #include "stm32f030x6.h"
 #include "buildid.h"

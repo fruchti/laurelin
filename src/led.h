@@ -27,6 +27,12 @@ extern volatile bool LED_FrameFlag;
 void LED_InitShiftRegister(void);
 void LED_Init(void);
 
+// Enter power-saving mode (LEDs off)
+void LED_Suspend(void);
+
+// Leave power-saving mode
+void LED_WakeUp(void);
+
 // Display LED_PixelData, starting with the next frame
 void LED_Commit(void);
 
