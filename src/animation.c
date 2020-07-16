@@ -286,6 +286,14 @@ LED_Colour_t Animation_GetColour(unsigned int step, unsigned int brightness)
 void Animation_DrawGradient(unsigned int step_bottom, unsigned int step_top,
     unsigned int brightness)
 {
+    if(step_bottom >= ANIMATION_STEPS)
+    {
+        step_bottom = 2 * ANIMATION_STEPS - step_bottom;
+    }
+    if(step_top >= ANIMATION_STEPS)
+    {
+        step_top = 2 * ANIMATION_STEPS - step_top;
+    }
     for(int i = 0; i < LED_COUNT; i++)
     {
         unsigned int step = ((LED_COUNT - 1 - i) * step_bottom + i * step_top)
@@ -301,7 +309,17 @@ void Animation_Poll(void)
     {
         return;
     }
-    LED_FrameFlag = false;
-    Animation_DrawGradient(60000, 50000, LightSensor_RelativeBrightness);
+
+    static unsigned int bottom = 0;
+    static unsigned int top = 0;
+
+    bottom += ANIMATION_STEPS / ANIMATION_DURATION_BOTTOM;
+    top += ANIMATION_STEPS / ANIMATION_DURATION_TOP;
+
+    bottom %= 2 * ANIMATION_STEPS;
+    top %= 2 * ANIMATION_STEPS;
+
+    Animation_DrawGradient(bottom, top, LightSensor_RelativeBrightness);
     LED_Commit();
+    LED_FrameFlag = false;
 }
