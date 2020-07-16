@@ -6,14 +6,14 @@
 #include "pinning.h"
 
 // ADC polling interval in milliseconds
-#define LIGHTSENSOR_INTERVAL    10
+#define LIGHTSENSOR_INTERVAL    250
 
 // 'Forgetting factor' of the rolling brightness average
-#define LIGHTSENSOR_LAMBDA      0.95f
+#define LIGHTSENSOR_LAMBDA      0.9f
 
 // Bounds for converting absolute to relative brightness: Consider everything
 // near the minimum or maximum 0.0 or 1.0, respectively
-#define LIGHTSENSOR_LOW_BOUND   0.1f
+#define LIGHTSENSOR_LOW_BOUND   0.005f
 #define LIGHTSENSOR_HIGH_BOUND  0.9f
 
 extern float LightSensor_RelativeBrightness;
