@@ -1,6 +1,8 @@
 #include "animation.h"
 #include "light_sensor.h"
 
+volatile bool Animation_FrameFlag = false;
+
 const unsigned int Animation_LEDOrder[LED_COUNT] =
 {
     19, 27, 21, 13, 0, 4, 24, 8, 12, 15, 6, 5, 28,
@@ -303,12 +305,24 @@ void Animation_DrawGradient(unsigned int step_bottom, unsigned int step_top,
     }
 }
 
+void Animation_Init(void)
+{
+    RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
+
+    TIM17->PSC = 8000 - 1;
+    TIM17->ARR = 1000 / ANIMATION_REFRESH_RATE;
+    TIM17->DIER = TIM_DIER_UIE;
+    TIM17->CR1 = TIM_CR1_CEN;
+    NVIC_EnableIRQ(TIM17_IRQn);
+}
+
 void Animation_Poll(void)
 {
-    if(!LED_FrameFlag)
+    if(!Animation_FrameFlag)
     {
         return;
     }
+    Animation_FrameFlag = false;
 
     static unsigned int bottom = 0;
     static unsigned int top = 0;
@@ -321,5 +335,10 @@ void Animation_Poll(void)
 
     Animation_DrawGradient(bottom, top, LightSensor_RelativeBrightness);
     LED_Commit();
-    LED_FrameFlag = false;
+}
+
+void TIM17_IRQHandler(void)
+{
+    Animation_FrameFlag = true;
+    TIM17->SR &= ~TIM_SR_UIF;
 }

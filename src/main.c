@@ -14,6 +14,7 @@ int main(void)
     }
 
     LED_Init();
+    Animation_Init();
 
     while(1)
     {
