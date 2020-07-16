@@ -4,6 +4,7 @@
 LED_Colour_t LED_PixelData[LED_COUNT] = {{0}};
 volatile bool LED_FrameFlag = false;
 volatile bool LED_SuspendFlag = false;
+bool LED_Suspended = false;
 
 #define LED_ODR_MASK            ((1 << PIN_LED_R_0) | (1 << PIN_LED_G_0) \
                                 | (1 << PIN_LED_B_0) | (1 << PIN_LED_R_1) \
@@ -59,6 +60,11 @@ static volatile bool LED_QueuePageFlip = false;
 
 void LED_Commit(void)
 {
+    if(LED_Suspended)
+    {
+        return;
+    }
+
     // Wait for the current data to be displayed in case LED_Commit was called
     // more than one time during a single frame. Otherwise, a race condition
     // might occur.
@@ -248,6 +254,11 @@ void LED_Init(void)
 
 void LED_Suspend(void)
 {
+    if(LED_Suspended)
+    {
+        return;
+    }
+
     LED_SuspendFlag = true;
     while(LED_SuspendFlag);
 
@@ -272,11 +283,20 @@ void LED_Suspend(void)
     // Disable timer and DMA clocks
     RCC->AHBENR &= ~RCC_AHBENR_DMA1EN;
     RCC->APB1ENR &= ~RCC_APB1ENR_TIM3EN;
+
+    LED_Suspended = true;
 }
 
 void LED_WakeUp(void)
 {
+    if(!LED_Suspended)
+    {
+        return;
+    }
+
     LED_Init();
+
+    LED_Suspended = false;
 }
 
 void DMA1_Channel2_3_IRQHandler(void)
