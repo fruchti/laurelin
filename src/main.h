@@ -6,6 +6,7 @@
 #include "buildid.h"
 #include "led.h"
 #include "light_sensor.h"
+#include "animation.h"
 
 int main(void);
 
