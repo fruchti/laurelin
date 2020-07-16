@@ -49,7 +49,7 @@ void LightSensor_Init(void)
     TIM14->CCMR1 = TIM_CCMR1_CC1S_0;
     TIM14->CCER = TIM_CCER_CC1E | TIM_CCER_CC1P;
     // Set up TIM14 for an oveflow interrupt at the configured interval
-    TIM14->PSC = 48000 * LIGHTSENSOR_INTERVAL / 65535;
+    TIM14->PSC = 8000 * LIGHTSENSOR_INTERVAL / 65535;
     TIM14->ARR = 65535;
     TIM14->DIER = TIM_DIER_UIE;
     NVIC_EnableIRQ(TIM14_IRQn);
