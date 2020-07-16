@@ -8,6 +8,7 @@
 #define LED_BITS                12
 #define LED_ROWS                8   // Rows are driven by a shift register
 #define LED_COLUMNS             12  // Columns are driven by the MCU directly
+#define LED_COUNT               (LED_ROWS * LED_COLUMNS / 3)
 
 typedef struct
 {
@@ -17,7 +18,7 @@ typedef struct
 } __attribute__((packed)) LED_Colour_t;
 
 // Pixel data, not displayed until LED_Commit() is called
-extern LED_Colour_t LED_PixelData[LED_ROWS * LED_COLUMNS / 3];
+extern LED_Colour_t LED_PixelData[LED_COUNT];
 
 // Is set to true for every frame, can be used for timing or synchronisation
 // externally. Will not be set to false within led.c.

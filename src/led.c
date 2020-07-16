@@ -1,7 +1,7 @@
 #include "led.h"
 #include "stm32f030x6.h"
 
-LED_Colour_t LED_PixelData[LED_ROWS * LED_COLUMNS / 3] = {{0}};
+LED_Colour_t LED_PixelData[LED_COUNT] = {{0}};
 volatile bool LED_FrameFlag = false;
 
 #define LED_ODR_MASK            ((1 << PIN_LED_R_0) | (1 << PIN_LED_G_0) \
