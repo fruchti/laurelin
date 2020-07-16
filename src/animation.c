@@ -1,18 +1,8 @@
 #include "animation.h"
-#include "led.h"
 
 const unsigned int Animation_LEDOrder[LED_COUNT] =
 {
-    // Red
-     0,  1,  2,  3,  4,  5,
-    // Green
-     6,  7,  8,  9, 10, 11,
-    // Blue
-    12, 13, 14, 15, 16, 17,
-    // Yellow
-    18, 19, 20, 21, 22, 23,
-    // Cyan
-    24, 25, 26, 27, 28, 29,
-    // Fuchsia
-    30, 31
+    19, 27, 21, 13, 0, 4, 24, 8, 12, 15, 6, 5, 28,
+    29, 17, 3, 18, 26, 22, 10, 16, 20, 30, 1,
+    25, 2, 14, 31, 7, 11, 9, 23
 };
