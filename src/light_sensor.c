@@ -89,7 +89,7 @@ void LightSensor_Poll(void)
             + LIGHTSENSOR_LOW_BOUND * range / LIGHTSENSOR_MAX;
         int high = LightSensor_MinimumBrightness
             + LIGHTSENSOR_HIGH_BOUND * range / LIGHTSENSOR_MAX;
-        LightSensor_RelativeBrightness = (LightSensor_AbsoluteBrightness - low)
+        LightSensor_RelativeBrightness = ((int)LightSensor_AbsoluteBrightness - low)
             * LIGHTSENSOR_MAX / (high - low);
         if(LightSensor_RelativeBrightness < 0)
         {
