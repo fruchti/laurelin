@@ -69,8 +69,10 @@ void Animation_Poll(void)
     static unsigned int bottom = 0;
     static unsigned int top = 0;
 
-    bottom += ANIMATION_STEPS / ANIMATION_DURATION_BOTTOM;
-    top += ANIMATION_STEPS / ANIMATION_DURATION_TOP;
+    bottom += ANIMATION_STEPS / ANIMATION_CYCLE_TIME_BOTTOM
+        / ANIMATION_REFRESH_RATE;
+    top += ANIMATION_STEPS / ANIMATION_CYCLE_TIME_TOP
+        / ANIMATION_REFRESH_RATE;
 
     bottom %= 2 * ANIMATION_STEPS;
     top %= 2 * ANIMATION_STEPS;
