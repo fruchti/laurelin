@@ -99,6 +99,17 @@ void LightSensor_Poll(void)
         {
             LightSensor_RelativeBrightness = LIGHTSENSOR_MAX;
         }
+
+        // Slowly reset limit values
+        static int decay_counter = 0;
+        decay_counter++;
+        if(decay_counter == LIGHTSENSOR_LIMIT_RESET_TIME * 1000
+            / LIGHTSENSOR_INTERVAL / LIGHTSENSOR_MAX)
+        {
+            decay_counter = 0;
+            LightSensor_MaximumBrightness -= 1;
+            LightSensor_MinimumBrightness += 1;
+        }
     }
 }
 
