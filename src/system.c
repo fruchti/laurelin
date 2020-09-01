@@ -6,4 +6,3 @@ void SystemInit(void)
     // Disable all interrupts
     RCC->CIR = 0x00000000;
 }
-

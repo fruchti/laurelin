@@ -10,4 +10,3 @@
 #include "animation.h"
 
 int main(void);
-

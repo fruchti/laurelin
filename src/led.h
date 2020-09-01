@@ -35,4 +35,3 @@ void LED_WakeUp(void);
 
 // Display LED_PixelData, starting with the next frame
 void LED_Commit(void);
-
