@@ -11,7 +11,7 @@
 #define NVS_VALID_BLOCK_MARKER  0xab34
 
 typedef struct
-__attribute__((packed))
+__attribute__((packed, aligned(2)))
 {
     // Actual block data
     NVS_Data_t data;
@@ -26,9 +26,9 @@ __attribute__((packed))
 } NVS_Block_t;
 
 __attribute__((used, section(".nvstore")))
-volatile NVS_Block_t NVS_Area[NVS_BLOCK_COUNT];
+NVS_Block_t NVS_Area[NVS_BLOCK_COUNT];
 
-volatile NVS_Block_t *NVS_FlashData;
+NVS_Block_t *NVS_FlashData;
 __attribute__((used))
 NVS_Block_t NVS_RAMData;
 
@@ -37,7 +37,7 @@ NVS_Data_t *const NVS_Data = &NVS_RAMData.data;
 static uint32_t NVS_CalculateCRC(NVS_Data_t *data)
 {
     CRC->CR = CRC_CR_RESET;
-    for(int i = 0; i < sizeof(NVS_Data_t); i++)
+    for(unsigned int i = 0; i < sizeof(NVS_Data_t); i++)
     {
         CRC->DR = ((uint8_t*)(data))[i];
     }
@@ -47,7 +47,7 @@ static uint32_t NVS_CalculateCRC(NVS_Data_t *data)
 static void NVS_ProgramHalfWord(uint16_t *dest, uint16_t value)
 {
     FLASH->CR |= FLASH_CR_PG;
-    *(volatile uint16_t*)dest = value;
+    *(uint16_t*)dest = value;
     while(FLASH->SR & FLASH_SR_BSY);
     if(*dest != value)
     {
@@ -91,7 +91,7 @@ static void NVS_EraseArea(void)
 
 static bool NVS_BlockEmpty(NVS_Block_t *block)
 {
-    for(int i = 0; i < sizeof(NVS_Block_t) / 2; i++)
+    for(unsigned int i = 0; i < sizeof(NVS_Block_t) / 2; i++)
     {
         if(*((uint16_t*)block + i) != 0xffff)
         {
@@ -111,10 +111,10 @@ bool NVS_Load(void)
 {
     RCC->AHBENR |= RCC_AHBENR_CRCEN;
 
-    volatile NVS_Block_t *block = NULL;
+    NVS_Block_t *block = NULL;
 
     // Find valid block
-    for(int i = 0; i < NVS_BLOCK_COUNT; i++)
+    for(unsigned int i = 0; i < NVS_BLOCK_COUNT; i++)
     {
         block = &NVS_Area[i];
         if(block->marker == NVS_VALID_BLOCK_MARKER)
@@ -168,7 +168,7 @@ void NVS_Save(void)
     NVS_RAMData.marker = NVS_VALID_BLOCK_MARKER;
 
     // The block length is guaranteed to be divisible by 2
-    for(int i = 0; i < sizeof(NVS_Block_t) / 2; i++)
+    for(unsigned int i = 0; i < sizeof(NVS_Block_t) / 2; i++)
     {
         NVS_ProgramHalfWord((uint16_t*)next_block + i,
             *((uint16_t*)&NVS_RAMData + i));

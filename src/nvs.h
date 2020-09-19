@@ -5,7 +5,7 @@
 #include "stm32f030x6.h"
 
 typedef struct
-__attribute__((packed))
+__attribute__((packed, aligned(2)))
 {
     unsigned int animation_step_bottom;
     unsigned int animation_step_top;
