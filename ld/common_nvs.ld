@@ -12,6 +12,15 @@ SECTIONS
         _end_text = .;
     } >flash
 
+    /* Non-volatile storage area in flash */
+    .nvstore (NOLOAD) :
+    {
+        . = ALIGN(1K);
+        *(.nvstore*)
+        . = ALIGN(1K);
+        _end_nvstore = .;
+    } > flash_nvstore
+
     /* C++ initialiser code segments */
     .preinit_array :
     {

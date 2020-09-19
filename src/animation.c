@@ -1,6 +1,7 @@
 #include "animation.h"
 #include "animation_lut.h"
 #include "light_sensor.h"
+#include "nvs.h"
 
 volatile bool Animation_FrameFlag = false;
 
@@ -75,18 +76,19 @@ void Animation_Poll(void)
     }
     Animation_FrameFlag = false;
 
-    static unsigned int bottom = 0;
-    static unsigned int top = 0;
-
-    bottom += ANIMATION_STEPS / ANIMATION_CYCLE_TIME_BOTTOM
+    NVS_Data->animation_step_bottom += ANIMATION_STEPS
+        / ANIMATION_CYCLE_TIME_BOTTOM
         / ANIMATION_REFRESH_RATE;
-    top += ANIMATION_STEPS / ANIMATION_CYCLE_TIME_TOP
+    NVS_Data->animation_step_top += ANIMATION_STEPS
+        / ANIMATION_CYCLE_TIME_TOP
         / ANIMATION_REFRESH_RATE;
 
-    bottom %= 2 * ANIMATION_STEPS;
-    top %= 2 * ANIMATION_STEPS;
+    NVS_Data->animation_step_bottom %= 2 * ANIMATION_STEPS;
+    NVS_Data->animation_step_top %= 2 * ANIMATION_STEPS;
 
-    Animation_DrawGradient(bottom, top, LightSensor_RelativeBrightness);
+    Animation_DrawGradient(NVS_Data->animation_step_bottom,
+            NVS_Data->animation_step_top,
+            LightSensor_RelativeBrightness);
     LED_Commit();
 }
 

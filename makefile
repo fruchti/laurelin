@@ -10,7 +10,7 @@ DEBUG := yes
 H_DEVICE = STM32F030x6
 STARTUP_SOURCE_DIR = src
 STARTUP_SOURCES = $(STARTUP_SOURCE_DIR)/startup.S
-LD_SCRIPT = ld/stm32f030f4_flash.ld
+LD_SCRIPT = ld/stm32f030f4_15k_flash_1k_nvs.ld
 
 ifeq ($(DEBUG),yes)
 DEBUG_FLAGS = -DDEBUG -g3
