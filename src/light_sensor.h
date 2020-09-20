@@ -17,8 +17,8 @@
 
 // Bounds for converting absolute to relative brightness (empirically
 // determined)
-#define LIGHTSENSOR_LOW_BOUND   ((int)(0.003 * LIGHTSENSOR_MAX))
-#define LIGHTSENSOR_HIGH_BOUND  ((int)(0.65 * LIGHTSENSOR_MAX))
+#define LIGHTSENSOR_LOW_BOUND   5
+#define LIGHTSENSOR_HIGH_BOUND  ((int)(0.85 * LIGHTSENSOR_MAX))
 
 extern int LightSensor_RelativeBrightness;
 
