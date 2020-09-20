@@ -44,7 +44,7 @@ static uint32_t NVS_CalculateCRC(NVS_Data_t *data)
     return CRC->DR;
 }
 
-static void NVS_ProgramHalfWord(uint16_t *dest, uint16_t value)
+static bool NVS_ProgramHalfWord(uint16_t *dest, uint16_t value)
 {
     FLASH->CR = FLASH_CR_PG;
     *(uint16_t*)dest = value;
@@ -52,9 +52,11 @@ static void NVS_ProgramHalfWord(uint16_t *dest, uint16_t value)
     if(*dest != value)
     {
         // Write failed
-        __asm__("bkpt");
+        FLASH->CR = 0x00000000;
+        return false;
     }
     FLASH->CR = 0x00000000;
+    return true;
 }
 
 static void NVS_UnlockFlash(void)
@@ -67,7 +69,7 @@ static void NVS_UnlockFlash(void)
     }
 }
 
-static void NVS_EraseArea(void)
+static bool NVS_EraseArea(void)
 {
     for(unsigned int i = 0; i < NVS_AREA_SIZE; i += 1024)
     {
@@ -84,9 +86,11 @@ static void NVS_EraseArea(void)
         else
         {
             // Erase failed
-            __asm__("bkpt");
+            FLASH->CR = 0x00000000;
+            return false;
         }
         FLASH->CR = 0x00000000;
+        return true;
     }
 }
 
@@ -148,7 +152,7 @@ bool NVS_Load(void)
     }
 }
 
-void NVS_Save(bool erase_if_needed)
+bool NVS_Save(bool erase_if_needed)
 {
     NVS_UnlockFlash();
 
@@ -162,9 +166,13 @@ void NVS_Save(bool erase_if_needed)
     {
         if(!erase_if_needed)
         {
-            return;
+            return false;
         }
-        NVS_EraseArea();
+
+        if(!NVS_EraseArea())
+        {
+            return false;
+        }
         next_block = &NVS_Area[0];
         current_block = NULL;
     }
@@ -175,14 +183,22 @@ void NVS_Save(bool erase_if_needed)
     // The block length is guaranteed to be divisible by 2
     for(unsigned int i = 0; i < sizeof(NVS_Block_t) / 2; i++)
     {
-        NVS_ProgramHalfWord((uint16_t*)next_block + i,
-            *((uint16_t*)&NVS_RAMData + i));
+        if(!NVS_ProgramHalfWord((uint16_t*)next_block + i,
+            *((uint16_t*)&NVS_RAMData + i)))
+        {
+            return false;
+        }
     }
 
     if(current_block != NULL)
     {
-        NVS_ProgramHalfWord((uint16_t*)&current_block->marker, 0x0000);
+        if(!NVS_ProgramHalfWord((uint16_t*)&current_block->marker, 0x0000))
+        {
+            return false;
+        }
     }
 
     NVS_FlashData = next_block;
+
+    return true;
 }
