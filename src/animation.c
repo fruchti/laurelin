@@ -4,12 +4,21 @@
 
 volatile bool Animation_FrameFlag = false;
 
+#if LED_COLUMNS == 12
 const unsigned int Animation_LEDOrder[LED_COUNT] =
 {
     19, 27, 21, 13, 0, 4, 24, 8, 12, 15, 6, 5, 28,
     29, 17, 3, 18, 26, 22, 10, 16, 20, 30, 1,
     25, 2, 14, 31, 7, 11, 9, 23
 };
+#elif LED_COLUMNS == 9
+const unsigned int Animation_LEDOrder[LED_COUNT] =
+{
+    19, 21, 13, 0, 4, 8, 12, 15, 6, 5,
+    17, 3, 18, 22, 10, 16, 20, 1,
+    2, 14, 7, 11, 9, 23
+};
+#endif
 
 LED_Colour_t Animation_GetColour(unsigned int step, unsigned int brightness)
 {

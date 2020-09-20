@@ -6,6 +6,7 @@ volatile bool LED_FrameFlag = false;
 volatile bool LED_SuspendFlag = false;
 bool LED_Suspended = false;
 
+#if LED_COLUMNS == 12
 #define LED_ODR_MASK            ((1 << PIN_LED_R_0) | (1 << PIN_LED_G_0) \
                                 | (1 << PIN_LED_B_0) | (1 << PIN_LED_R_1) \
                                 | (1 << PIN_LED_G_1) | (1 << PIN_LED_B_1) \
@@ -26,6 +27,27 @@ bool LED_Suspended = false;
                                 | (1 << PIN_LED_R_2 * 2) | (1 << PIN_LED_G_2 * 2) \
                                 | (1 << PIN_LED_B_2 * 2) | (1 << PIN_LED_R_3 * 2) \
                                 | (1 << PIN_LED_G_3 * 2) | (1 << PIN_LED_B_3 * 2))
+#elif LED_COLUMNS == 9
+#define LED_ODR_MASK            ((1 << PIN_LED_R_0) | (1 << PIN_LED_G_0) \
+                                | (1 << PIN_LED_B_0) | (1 << PIN_LED_R_1) \
+                                | (1 << PIN_LED_G_1) | (1 << PIN_LED_B_1) \
+                                | (1 << PIN_LED_R_2) | (1 << PIN_LED_G_2) \
+                                | (1 << PIN_LED_B_2))
+
+#define LED_MODER_MASK          ((3 << PIN_LED_R_0 * 2) | (3 << PIN_LED_G_0 * 2) \
+                                | (3 << PIN_LED_B_0 * 2) | (3 << PIN_LED_R_1 * 2) \
+                                | (3 << PIN_LED_G_1 * 2) | (3 << PIN_LED_B_1 * 2) \
+                                | (3 << PIN_LED_R_2 * 2) | (3 << PIN_LED_G_2 * 2) \
+                                | (3 << PIN_LED_B_2 * 2))
+
+#define LED_MODER               ((1 << PIN_LED_R_0 * 2) | (1 << PIN_LED_G_0 * 2) \
+                                | (1 << PIN_LED_B_0 * 2) | (1 << PIN_LED_R_1 * 2) \
+                                | (1 << PIN_LED_G_1 * 2) | (1 << PIN_LED_B_1 * 2) \
+                                | (1 << PIN_LED_R_2 * 2) | (1 << PIN_LED_G_2 * 2) \
+                                | (1 << PIN_LED_B_2 * 2))
+#else
+#error Unsupported LED column count
+#endif
 
 // TIM3 is clocked by APB1 and thus receives only half the system clock. The 4
 // LSBs have bit lengths 2, 4, 8, and 16 cycles and are generated blocking from
@@ -35,6 +57,7 @@ static const uint16_t LED_BitLengths[LED_BITS - 4] =
     16, 32, 64, 128, 256, 512, 1024, 2048
 };
 
+#if LED_COLUMNS == 12
 static const int LED_Pins[LED_COLUMNS] =
 {
     PIN_LED_R_0, PIN_LED_G_0, PIN_LED_B_0,
@@ -42,6 +65,14 @@ static const int LED_Pins[LED_COLUMNS] =
     PIN_LED_R_2, PIN_LED_G_2, PIN_LED_B_2,
     PIN_LED_R_3, PIN_LED_G_3, PIN_LED_B_3
 };
+#elif LED_COLUMNS == 9
+static const int LED_Pins[LED_COLUMNS] =
+{
+    PIN_LED_R_0, PIN_LED_G_0, PIN_LED_B_0,
+    PIN_LED_R_1, PIN_LED_G_1, PIN_LED_B_1,
+    PIN_LED_R_2, PIN_LED_G_2, PIN_LED_B_2
+};
+#endif
 
 // Number of 16-bit values to be transferred to the GPIO's output register via
 // DMA. Each value contains output values for all columns. For each row, a

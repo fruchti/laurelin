@@ -5,9 +5,11 @@
 #include "stm32f030x6.h"
 #include "pinning.h"
 
-#define LED_BITS                12
+#define LED_BITS                12  // BCM resolution in bits
 #define LED_ROWS                8   // Rows are driven by a shift register
-#define LED_COLUMNS             12  // Columns are driven by the MCU directly
+#define LED_COLUMNS             12  // Columns are driven by the MCU directly.
+                                    // Set to 9 to free the SWD pins and enable
+                                    // debugging.
 #define LED_COUNT               (LED_ROWS * LED_COLUMNS / 3)
 
 typedef struct
