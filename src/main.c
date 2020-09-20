@@ -13,6 +13,7 @@ int main(void)
         LightSensor_Poll();
     }
 
+    NVS_Load();
     LED_Init();
     Animation_Init();
 

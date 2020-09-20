@@ -8,5 +8,6 @@
 #include "led.h"
 #include "light_sensor.h"
 #include "animation.h"
+#include "nvs.h"
 
 int main(void);
