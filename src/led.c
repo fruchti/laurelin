@@ -105,15 +105,13 @@ void LED_Commit(void)
     {
         for(int i = 0; i < LED_COLUMNS; i++)
         {
-            // Use pixel data as a raw byte buffer to get R, G, B in order
-            uint8_t colour_value = ((uint8_t*)LED_PixelData)[r * LED_COLUMNS + i];
-            uint16_t gamma_corrected = (uint16_t)colour_value;
-            gamma_corrected *= gamma_corrected;
-            gamma_corrected >>= 16 - LED_BITS;
+            // Use pixel data as a raw word buffer to get R, G, B in order
+            uint16_t colour_value =
+                ((uint16_t*)LED_PixelData)[r * LED_COLUMNS + i];
 
             for(int j = 0; j < LED_BITS; j++)
             {
-                if(gamma_corrected & (1 << j))
+                if(colour_value & (1 << j))
                 {
                     LED_BackBuffer[r * (LED_BITS + 1) + j] &=
                         ~(1 << LED_Pins[i]);

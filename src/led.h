@@ -14,10 +14,10 @@
 
 typedef struct
 {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-} __attribute__((packed)) LED_Colour_t;
+    uint16_t r;
+    uint16_t g;
+    uint16_t b;
+} __attribute__((packed, aligned(2))) LED_Colour_t;
 
 // Pixel data, not displayed until LED_Commit() is called
 extern LED_Colour_t LED_PixelData[LED_COUNT];
