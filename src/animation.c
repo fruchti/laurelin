@@ -90,6 +90,14 @@ void Animation_Poll(void)
             NVS_Data->animation_step_top,
             LightSensor_RelativeBrightness);
     LED_Commit();
+
+    static unsigned int store_counter = 0;
+    store_counter++;
+    if(store_counter >= ANIMATION_NVS_STORE_INTERVAL * ANIMATION_REFRESH_RATE)
+    {
+        store_counter = 0;
+        NVS_Save(false);
+    }
 }
 
 void TIM17_IRQHandler(void)

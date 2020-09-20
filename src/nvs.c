@@ -148,7 +148,7 @@ bool NVS_Load(void)
     }
 }
 
-void NVS_Save(void)
+void NVS_Save(bool erase_if_needed)
 {
     NVS_UnlockFlash();
 
@@ -160,6 +160,10 @@ void NVS_Save(void)
     if(current_block == NULL || next_block > NVS_Area + NVS_BLOCK_COUNT
         || !NVS_BlockEmpty(next_block))
     {
+        if(!erase_if_needed)
+        {
+            return;
+        }
         NVS_EraseArea();
         next_block = &NVS_Area[0];
         current_block = NULL;

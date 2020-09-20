@@ -15,6 +15,10 @@
 #define ANIMATION_CYCLE_TIME_TOP \
                                 (8 * 24 * 60 * 60)
 
+// Interval for saving the current animation step to NVS (in seconds)
+#define ANIMATION_NVS_STORE_INTERVAL \
+                                (60 * 60)
+
 extern const unsigned int Animation_LEDOrder[LED_COUNT];
 
 void Animation_Init(void);

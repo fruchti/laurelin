@@ -26,13 +26,13 @@ int main(void)
         if(LightSensor_RelativeBrightness == 0 && !powered_down)
         {
             LED_Suspend();
-            NVS_Save();
+            NVS_Save(true);
             powered_down = true;
         }
         if(powered_down && LightSensor_RelativeBrightness > 0)
         {
             powered_down = false;
-            NVS_Save();
+            NVS_Save(true);
             LED_WakeUp();
         }
     }
