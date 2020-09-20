@@ -15,14 +15,10 @@
 // 'Forgetting factor' of the rolling brightness average
 #define LIGHTSENSOR_LAMBDA_BITS 2
 
-// Time until minimum and maximum value are completely reset (in seconds)
-#define LIGHTSENSOR_LIMIT_RESET_TIME \
-                                (48 * 60 * 60)
-
-// Bounds for converting absolute to relative brightness: Consider everything
-// near the minimum or maximum 0.0 or 1.0, respectively
-#define LIGHTSENSOR_LOW_BOUND   ((unsigned int)(0.013 * LIGHTSENSOR_MAX))
-#define LIGHTSENSOR_HIGH_BOUND  ((unsigned int)(1.0 * LIGHTSENSOR_MAX))
+// Bounds for converting absolute to relative brightness (empirically
+// determined)
+#define LIGHTSENSOR_LOW_BOUND   ((int)(0.003 * LIGHTSENSOR_MAX))
+#define LIGHTSENSOR_HIGH_BOUND  ((int)(0.65 * LIGHTSENSOR_MAX))
 
 extern int LightSensor_RelativeBrightness;
 
