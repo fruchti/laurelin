@@ -46,7 +46,7 @@ static uint32_t NVS_CalculateCRC(NVS_Data_t *data)
 
 static void NVS_ProgramHalfWord(uint16_t *dest, uint16_t value)
 {
-    FLASH->CR |= FLASH_CR_PG;
+    FLASH->CR = FLASH_CR_PG;
     *(uint16_t*)dest = value;
     while(FLASH->SR & FLASH_SR_BSY);
     if(*dest != value)
@@ -54,6 +54,7 @@ static void NVS_ProgramHalfWord(uint16_t *dest, uint16_t value)
         // Write failed
         __asm__("bkpt");
     }
+    FLASH->CR = 0x00000000;
 }
 
 static void NVS_UnlockFlash(void)
@@ -68,10 +69,10 @@ static void NVS_UnlockFlash(void)
 
 static void NVS_EraseArea(void)
 {
-    for(int i = 0; i < NVS_AREA_SIZE; i += 1024)
+    for(unsigned int i = 0; i < NVS_AREA_SIZE; i += 1024)
     {
         while(FLASH->SR & FLASH_SR_BSY);
-        FLASH->CR |= FLASH_CR_PER;
+        FLASH->CR = FLASH_CR_PER;
         FLASH->AR = (uint32_t)NVS_Area + i;
         FLASH->CR |= FLASH_CR_STRT;
         while(FLASH->SR & FLASH_SR_BSY);
@@ -85,7 +86,7 @@ static void NVS_EraseArea(void)
             // Erase failed
             __asm__("bkpt");
         }
-        FLASH->CR &= ~FLASH_CR_PER;
+        FLASH->CR = 0x00000000;
     }
 }
 
