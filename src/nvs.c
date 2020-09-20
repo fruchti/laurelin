@@ -90,8 +90,8 @@ static bool NVS_EraseArea(void)
             return false;
         }
         FLASH->CR = 0x00000000;
-        return true;
     }
+    return true;
 }
 
 static bool NVS_BlockEmpty(NVS_Block_t *block)
