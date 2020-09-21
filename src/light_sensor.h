@@ -10,7 +10,7 @@
 
 // Resolution of the brightness output
 #define LIGHTSENSOR_BITS        12
-#define LIGHTSENSOR_MAX         (1 << LIGHTSENSOR_BITS)
+#define LIGHTSENSOR_MAX         ((1 << LIGHTSENSOR_BITS) - 1)
 
 // 'Forgetting factor' of the rolling brightness average
 #define LIGHTSENSOR_LAMBDA_BITS 2
