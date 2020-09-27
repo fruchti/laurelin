@@ -144,7 +144,7 @@ static void LED_StartBCM(int row)
     TIM3->ARR = LED_BitLengths[0];
     TIM3->DIER = TIM_DIER_UDE | TIM_DIER_CC1DE;
 
-    // DMA channel 3: Output data to port a on TIM3 update
+    // DMA channel 3: output data to port a on TIM3 update event
     DMA1_Channel3->CMAR = (uint32_t)&(LED_FrontBuffer[row * (LED_BITS + 1) + 4]);
     // One transfer for each bit plus one to set the outputs to zero again.
     // The first 4 are sent out with assembly before the first DMA transfer.
@@ -153,7 +153,7 @@ static void LED_StartBCM(int row)
     DMA1_Channel3->CCR = DMA_CCR_PL | DMA_CCR_MSIZE_0 | DMA_CCR_PSIZE_0
         | DMA_CCR_MINC | DMA_CCR_DIR | DMA_CCR_EN | DMA_CCR_TCIE;
 
-    // DMA channel 3: Output data to port a on TIM3 update
+    // DMA channel 4: update TIM3 ARR on TIM3 compare 1 match
     // The bit lengths table is offset because the first value is already in
     // the timer's ARR shadow register.
     DMA1_Channel4->CMAR = (uint32_t)&(LED_BitLengths[1]);
